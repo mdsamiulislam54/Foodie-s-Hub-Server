@@ -1,3 +1,4 @@
+import { RecipeBlogModel } from "../Schema/blogData.js";
 import RecipesModel from "../Schema/Recipes.js";
 
 
@@ -13,14 +14,14 @@ export const getTopRecipes = async (req, res) => {
 };
 
 export const getAllRecipes = async (req, res) => {
-    const {page,limit} = req.query;
+    const {page,limit,cuisineType} = req.query;
     const pageNumber = parseInt(page) || 0;
     const limitNumber = parseInt(limit) || 6;
-    console.log("page size",pageNumber, "limit", limitNumber);
+ const query = cuisineType ? { cuisineType: cuisineType } : {};
     const skip = pageNumber * limitNumber
 
-  const recipes = await RecipesModel.find().sort({ likeCount: -1 }).skip(skip).limit(limitNumber);
-  const count = await RecipesModel.countDocuments();
+  const recipes = await RecipesModel.find(query).sort({ likeCount: -1 }).skip(skip).limit(limitNumber);
+  const count = await RecipesModel.countDocuments(query);
   res.send({ recipes, count });
 };
 
@@ -59,4 +60,20 @@ export const patchRecipe = async (req, res) => {
   const updateDoc = { $set: recipe };
   const result = await RecipesModel.updateOne(query, updateDoc);
   res.send(result);
+};
+
+
+
+
+
+export const postBlog = async (req, res) => {
+
+  const result = await RecipeBlogModel.insertOne(blogData);
+  res.send(result);
+}
+
+export const getBlog = async (req, res) => {
+  const limit = parseInt(req.query.limit) || 0; // Default to 6 if not specified
+  const blogs = await RecipeBlogModel.find().sort({ createdAt: -1 }).limit(limit);
+  res.send(blogs);
 };
