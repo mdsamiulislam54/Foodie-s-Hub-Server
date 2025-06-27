@@ -1,7 +1,6 @@
 import { RecipeBlogModel } from "../Schema/blogData.js";
 import RecipesModel from "../Schema/Recipes.js";
 
-
 export const addRecipe = async (req, res) => {
   const recipe = req.body;
   const result = await RecipesModel.insertOne(recipe);
@@ -14,13 +13,26 @@ export const getTopRecipes = async (req, res) => {
 };
 
 export const getAllRecipes = async (req, res) => {
-    const {page,limit,cuisineType} = req.query;
-    const pageNumber = parseInt(page) || 0;
-    const limitNumber = parseInt(limit) || 6;
- const query = cuisineType ? { cuisineType: cuisineType } : {};
-    const skip = pageNumber * limitNumber
+  const { page, limit, cuisineType } = req.query;
+  const pageNumber = parseInt(page) || 0;
+  const limitNumber = parseInt(limit) || 0;
 
-  const recipes = await RecipesModel.find(query).sort({ likeCount: -1 }).skip(skip).limit(limitNumber);
+  const uid = req.query.uid;
+  const query = {};
+
+  if (cuisineType) {
+    query.cuisineType = cuisineType;
+  }
+
+  if (uid) {
+    query.userId = uid;
+  }
+  const skip = pageNumber * limitNumber;
+
+  const recipes = await RecipesModel.find(query)
+    .sort({ likeCount: -1 })
+    .skip(skip)
+    .limit(limitNumber);
   const count = await RecipesModel.countDocuments(query);
   res.send({ recipes, count });
 };
@@ -62,22 +74,17 @@ export const patchRecipe = async (req, res) => {
   res.send(result);
 };
 
-
-
-
-
 export const postBlog = async (req, res) => {
-
   const result = await RecipeBlogModel.insertOne(blogData);
   res.send(result);
-}
+};
 
 export const getBlog = async (req, res) => {
   const limit = parseInt(req.query.limit) || 6;
   const page = parseInt(req.query.page) || 0;
   const cuisineType = req.query.cuisineType || "";
   const searchTerm = req.query.searchTerm || "";
- 
+
   const query = {};
 
   if (cuisineType) {
