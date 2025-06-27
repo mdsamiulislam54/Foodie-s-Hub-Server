@@ -21,6 +21,18 @@ const recipeBlogSchema = new mongoose.Schema({
     type: String, 
     default: "https://i.postimg.cc/x8VW5nbb/banner-2.png"
   },
+  cuisineType: {
+    type: String,
+    required: true,
+  },
+  preparationTime: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    required: true,
+  },
   likeCount: {
     type: Number,
     default: 0,

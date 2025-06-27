@@ -73,7 +73,45 @@ export const postBlog = async (req, res) => {
 }
 
 export const getBlog = async (req, res) => {
-  const limit = parseInt(req.query.limit) || 0; // Default to 6 if not specified
-  const blogs = await RecipeBlogModel.find().sort({ createdAt: -1 }).limit(limit);
-  res.send(blogs);
+  const limit = parseInt(req.query.limit) || 6;
+  const page = parseInt(req.query.page) || 0;
+  const cuisineType = req.query.cuisineType || "";
+  const searchTerm = req.query.searchTerm || "";
+ 
+  const query = {};
+
+  if (cuisineType) {
+    query.cuisineType = cuisineType;
+  }
+
+  if (searchTerm) {
+    query.title = { $regex: searchTerm, $options: "i" };
+  }
+
+  try {
+    const blogs = await RecipeBlogModel.find(query)
+      .sort({ createdAt: -1 })
+      .skip(page * limit)
+      .limit(limit);
+
+    const count = await RecipeBlogModel.countDocuments(query);
+
+    res.send({ blogs, count });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
+export const getBlogDetails = async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  try {
+    const blog = await RecipeBlogModel.findOne({ _id: id });
+    if (!blog) {
+      return res.status(404).send({ message: "Blog not found" });
+    }
+    res.send(blog);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
 };
